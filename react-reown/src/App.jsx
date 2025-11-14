@@ -731,12 +731,6 @@ function AppKitProvider({ mode, setMode }) {
   }
 
   const currentChainId = chain?.id || 1287;
-  
-  // Debug logging
-  console.log('Chain ID:', chain?.id);
-  console.log('Current Chain ID:', currentChainId);
-  console.log('Chain object:', chain);
-  
   const gameUrl = getGameUrl(currentChainId);
   const networkName = getNetworkName(currentChainId);
   const nativeCurrency = getNativeCurrency(currentChainId);
