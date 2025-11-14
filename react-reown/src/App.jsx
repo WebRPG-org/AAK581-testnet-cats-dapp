@@ -793,7 +793,7 @@ function AppKitProvider({ mode, setMode }) {
           <>
             <p className="app-text">Wallet: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
             <p className="app-text">On-Chain Kittens: {isLoading ? 'Loading...' : kittenCount ? Number(kittenCount) : '0'}</p>
-            {(chain?.id === 545 || chain?.id === 1287) && (
+            {(currentChainId === 545 || currentChainId === 1287) && (
               <>
                 <p className="app-text">
                   Lifetime Kittens: {lifetime ? Number(lifetime) : 0} / 20 for NFT Eligibility
@@ -809,7 +809,7 @@ function AppKitProvider({ mode, setMode }) {
 
                 {/* NFT Card */}
                 {nftBalance && Number(nftBalance) > 0 && address && (
-                  <NFTCard key={address} address={address} chainId={chain?.id} />
+                  <NFTCard key={address} address={address} chainId={currentChainId} />
                 )}
               </>
             )}
@@ -834,7 +834,7 @@ function AppKitProvider({ mode, setMode }) {
         <p>{contractAddress}</p>
         <b>
           <p className="app-textEligible">
-            Donations above {chain?.id === 545 ? '200 DEV' : chain?.id === 10143 ? '200 MON' : chain?.id === 11155111 || chain?.id === 534351 ? '200 SETH' : '200 DEV'} will be eligible for advertisement!!
+            Donations above {currentChainId === 545 ? '10,000,000 FLOW' : currentChainId === 10143 ? '200 MON' : currentChainId === 11155111 || currentChainId === 534351 ? '200 SETH' : '200 DEV'} will be eligible for advertisement!!
           </p>
         </b>
         <i><p className="disclaimer">No gambling or NSFW advertisements allowed</p></i>
