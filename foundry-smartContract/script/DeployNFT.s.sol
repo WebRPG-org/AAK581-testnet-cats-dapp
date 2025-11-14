@@ -9,11 +9,11 @@ contract DeployNFT is Script {
         uint256 pk = vm.envUint("PK");
         vm.startBroadcast(pk);
 
-        string memory baseURI = "https://gray-improved-whitefish-326.mypinata.cloud/ipfs/bafybeifzsqfm6emnz4pcow62oalmcajyv3e3biz7iro5ljtizm2f3rfzza/";
+        string memory baseURI = "https://gray-improved-whitefish-326.mypinata.cloud/ipfs/bafybeihnb5z3mf4q437xusfznf7cpegmgvk4bzdxjf22oqd2rbyno2oaai/";
 
         MilestoneNFT nft = new MilestoneNFT(
-            "Flow Cats Milestone",
-            "FCM",
+            "Polkadot Cats Milestone",
+            "PCM",
             baseURI
         );
 

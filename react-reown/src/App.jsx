@@ -2,7 +2,7 @@ import { createAppKit } from '@reown/appkit/react';
 import { WagmiProvider, useReadContract, useWriteContract, useAccount, useAccountEffect } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { scrollSepolia, sepolia, monadTestnet, flowTestnet } from '@reown/appkit/networks';
+import { scrollSepolia, sepolia, monadTestnet, flowTestnet, moonbaseAlpha } from '@reown/appkit/networks';
 import { ThemeProvider, createTheme, Box, Switch } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useState, useEffect } from 'react';
@@ -13,6 +13,11 @@ import { useMemo, memo } from 'react';
 import { usePublicClient } from 'wagmi';
 import { createPublicClient, http } from 'viem';
 import './App.css';
+
+const moonbasePublicClient = createPublicClient({
+  chain: moonbaseAlpha,
+  transport: http(),
+});
 
 const flowPublicClient = createPublicClient({
   chain: flowTestnet,
@@ -28,13 +33,13 @@ const projectId = import.meta.env.VITE_PROJECT_ID;
 // Metadata
 const metadata = {
   name: 'GameDApp',
-  description: 'Sepolia Cats dApp',
+  description: 'Polkadot Cats dApp',
   url: 'https://blokkat-arabicblockchain-developer.vercel.app/',
   icons: ['https://avatars.githubusercontent.com/u/179229932'],
 };
 
-// Networks
-const networks = [scrollSepolia, sepolia, monadTestnet, flowTestnet];
+// Networks - Moonbase Alpha first (default)
+const networks = [moonbaseAlpha, flowTestnet, scrollSepolia, sepolia, monadTestnet];
 
 // Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
@@ -54,13 +59,16 @@ createAppKit({
 
 // Contract configuration
 const contractAddresses = {
-  534351: '0xA45a75B3523334bf4017b0BB9D76d4E06661fba3',
-  11155111: '0xa9C4cd6C657f5110C6966c78962D47c24D27BD57',
-  10143: '0x0968F5BF2EdEEEEf0bdB42C304DB24d5CE90B9D7',
-  545: '0x292Fe1de6ce0ca4917fB6163ECb4C00b395D5804'
+  1287: '0xFee91cdC10A1663d69d6891d8b6621987aACe2EF', // Moonbase Alpha
+  545: '0x292Fe1de6ce0ca4917fB6163ECb4C00b395D5804', // Flow
+  534351: '0xA45a75B3523334bf4017b0BB9D76d4E06661fba3', // Scroll Sepolia
+  11155111: '0xa9C4cd6C657f5110C6966c78962D47c24D27BD57', // Sepolia
+  10143: '0x0968F5BF2EdEEEEf0bdB42C304DB24d5CE90B9D7' // Monad
 };
+
 const nftAddresses = {
-  545: "0x335777beD22AdA837E46D28AE83ba697eDD09d62"
+  1287: '0x0968F5BF2EdEEEEf0bdB42C304DB24d5CE90B9D7', // Moonbase Alpha
+  545: '0x335777beD22AdA837E46D28AE83ba697eDD09d62' // Flow
 };
 
 const erc721Abi = [
@@ -437,16 +445,17 @@ const contractAbi = [
   }
 ];
 
-
-
-
-const NFTCard = memo(({ address }) => {
-  const nftContract = nftAddresses[545];
-  const baseURI = "https://gray-improved-whitefish-326.mypinata.cloud/ipfs/bafybeifzsqfm6emnz4pcow62oalmcajyv3e3biz7iro5ljtizm2f3rfzza/";
+const NFTCard = memo(({ address, chainId }) => {
+  const nftContract = nftAddresses[chainId];
+  const baseURI = chainId === 1287 
+    ? "https://gray-improved-whitefish-326.mypinata.cloud/ipfs/bafybeihnb5z3mf4q437xusfznf7cpegmgvk4bzdxjf22oqd2rbyno2oaai/"
+    : "https://gray-improved-whitefish-326.mypinata.cloud/ipfs/bafybeifzsqfm6emnz4pcow62oalmcajyv3e3biz7iro5ljtizm2f3rfzza/";
 
   const [tokenId, setTokenId] = useState(null);
   const [nftData, setNftData] = useState(null);
   const [searching, setSearching] = useState(true);
+
+  const publicClient = chainId === 1287 ? moonbasePublicClient : flowPublicClient;
 
   useEffect(() => {
     if (!address) {
@@ -458,7 +467,7 @@ const NFTCard = memo(({ address }) => {
     (async () => {
       for (let id = 1; id <= 10; id++) {
         try {
-          const owner = await flowPublicClient.readContract({
+          const owner = await publicClient.readContract({
             address: nftContract,
             abi: erc721Abi,
             functionName: "ownerOf",
@@ -477,7 +486,7 @@ const NFTCard = memo(({ address }) => {
       }
       setSearching(false);
     })();
-  }, [address]);
+  }, [address, chainId]);
 
   useEffect(() => {
     if (!tokenId) return;
@@ -487,9 +496,13 @@ const NFTCard = memo(({ address }) => {
       .catch(() => setNftData(null));
   }, [tokenId]);
 
-  const flowscanUrl = tokenId
-    ? `https://evm-testnet.flowscan.io/token/${nftContract}/instance/${tokenId}`
-    : `https://evm-testnet.flowscan.io/token/${nftContract}`;
+  const explorerUrl = tokenId
+    ? chainId === 1287
+      ? `https://moonbase.moonscan.io/token/${nftContract}?a=${tokenId}`
+      : `https://evm-testnet.flowscan.io/token/${nftContract}/instance/${tokenId}`
+    : chainId === 1287
+      ? `https://moonbase.moonscan.io/token/${nftContract}`
+      : `https://evm-testnet.flowscan.io/token/${nftContract}`;
 
   if (searching) {
     return (
@@ -523,12 +536,12 @@ const NFTCard = memo(({ address }) => {
 
   return (
     <div className="nft-card">
-      <a href={flowscanUrl} target="_blank" rel="noopener noreferrer" className="nft-link">
+      <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="nft-link">
         <img src={imageUrl} alt={nftData.name} className="nft-image" />
       </a>
       <p className="nft-name">{nftData.name}</p>
-      <a href={flowscanUrl} target="_blank" rel="noopener noreferrer" className="nft-link">
-        View on Flowscan
+      <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="nft-link">
+        View on {chainId === 1287 ? 'Moonscan' : 'Flowscan'}
       </a>
     </div>
   );
@@ -588,12 +601,48 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
+// Helper function to get game URL by chain
+const getGameUrl = (chainId) => {
+  switch(chainId) {
+    case 1287: return 'https://polkadot-cats-game.vercel.app/';
+    case 545: return 'https://flow-cats-rpg-game.vercel.app/';
+    case 11155111: return 'https://rpg-game-sepolia-cats.vercel.app/';
+    case 534351: return 'https://rpg-game-sepolia-cats.vercel.app/';
+    case 10143: return 'https://monad-cats-game.vercel.app/';
+    default: return 'https://polkadot-cats-game.vercel.app/';
+  }
+};
+
+// Helper function to get network name
+const getNetworkName = (chainId) => {
+  switch(chainId) {
+    case 1287: return 'Polkadot Cats dApp';
+    case 545: return 'FLOW Cats dApp';
+    case 11155111: return 'Sepolia Cats dApp';
+    case 534351: return 'Sepolia Cats dApp';
+    case 10143: return 'Monad Cats dApp';
+    default: return 'Polkadot Cats dApp';
+  }
+};
+
+// Helper function to get native currency
+const getNativeCurrency = (chainId) => {
+  switch(chainId) {
+    case 1287: return 'DEV';
+    case 545: return 'FLOW';
+    case 11155111: return 'ETH';
+    case 534351: return 'ETH';
+    case 10143: return 'MON';
+    default: return 'DEV';
+  }
+};
+
 // AppKitProvider Component
 function AppKitProvider({ mode, setMode }) {
   const {chain} = useAccount();
   const { address, isConnected, isConnecting } = useAccount();
 
-  const contractAddress = contractAddresses[chain?.id] || contractAddresses[534351];
+  const contractAddress = contractAddresses[chain?.id] || contractAddresses[1287];
 
   // Get kittens from contract
   const { data: kittenCount, error: readError, isLoading } = useReadContract({
@@ -638,7 +687,7 @@ function AppKitProvider({ mode, setMode }) {
     ],
     functionName: 'balanceOf',
     args: [address],
-    enabled: !!address && chain?.id === 545,
+    enabled: !!address && (chain?.id === 545 || chain?.id === 1287),
   });
 
   // Get lifetime kittens from contract
@@ -647,7 +696,7 @@ function AppKitProvider({ mode, setMode }) {
     abi: contractAbi,
     functionName: 'getLifetimeKittens',
     args: [address],
-    enabled: !!address && chain?.id === 545,
+    enabled: !!address && (chain?.id === 545 || chain?.id === 1287),
   });
 
   // Claim rewards from the contract
@@ -661,8 +710,6 @@ function AppKitProvider({ mode, setMode }) {
       gas: 200000,
     });
   };
-
-
 
   // Show loading state until connection state is resolved
   if (isConnecting) {
@@ -683,7 +730,12 @@ function AppKitProvider({ mode, setMode }) {
     );
   }
 
-return (
+  const currentChainId = chain?.id || 1287;
+  const gameUrl = getGameUrl(currentChainId);
+  const networkName = getNetworkName(currentChainId);
+  const nativeCurrency = getNativeCurrency(currentChainId);
+
+  return (
     <Box
       sx={{
         position: 'relative',
@@ -696,15 +748,16 @@ return (
         minHeight: '100vh',
       }}
     >
-      <a href={chain?.id === 11155111 ? 'https://rpg-game-sepolia-cats.vercel.app/' : chain?.id === 534351 ? 'https://rpg-game-sepolia-cats.vercel.app/' : chain?.id === 10143 ? 'https://monad-cats-game.vercel.app/' : 'https://flow-cats-rpg-game.vercel.app/'} target="_blank" rel="noopener noreferrer">
+      <a href={gameUrl} target="_blank" rel="noopener noreferrer">
         <img src="/oiia.png" alt="accessGameImg" className="accessGameImg" />
       </a>
       <p className="pPlay">
-        Play the game <a href={chain?.id === 11155111 ? 'https://rpg-game-sepolia-cats.vercel.app/' : chain?.id === 534351 ? 'https://rpg-game-sepolia-cats.vercel.app/' : chain?.id === 10143 ? 'https://monad-cats-game.vercel.app/' : 'https://flow-cats-rpg-game.vercel.app/'} target="_blank" rel="noopener noreferrer">here</a>!
+        Play the game <a href={gameUrl} target="_blank" rel="noopener noreferrer">here</a>!
       </p>
       <div className="network-window">
         <p className="network-title">Supported Networks:</p>
         <ul className="network-list">
+          <li>Polkadot Moonbase Alpha (1287)</li>
           <li>Flow Testnet (545)</li>
           <li>Sepolia (11155111)</li>
           <li>Scroll Sepolia (534351)</li>
@@ -720,9 +773,7 @@ return (
             backgroundColor: theme.palette.secondary.main,
           }),
       ]}>
-        <h1 className="app-title">
-          {chain?.id === 11155111 ? 'Sepolia Cats dApp' : chain?.id === 534351 ? 'Sepolia Cats dApp' : chain?.id === 10143 ? 'Monad Cats dApp' : 'FLOW Cats dApp'}
-        </h1>
+        <h1 className="app-title">{networkName}</h1>
         <FormGroup>
           <FormControlLabel
             control={
@@ -742,13 +793,13 @@ return (
           <>
             <p className="app-text">Wallet: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
             <p className="app-text">On-Chain Kittens: {isLoading ? 'Loading...' : kittenCount ? Number(kittenCount) : '0'}</p>
-            {chain?.id === 545 && (
+            {(chain?.id === 545 || chain?.id === 1287) && (
               <>
                 <p className="app-text">
-                  Lifetime Kittens: {lifetime ? Number(lifetime) : 0} / 300 for NFT Eligibility
+                  Lifetime Kittens: {lifetime ? Number(lifetime) : 0} / 20 for NFT Eligibility
                 </p>
 
-                {lifetime && Number(lifetime) >= 300 && (
+                {lifetime && Number(lifetime) >= 20 && (
                   <p className="app-text milestone-text">Milestone Reached!</p>
                 )}
 
@@ -758,14 +809,16 @@ return (
 
                 {/* NFT Card */}
                 {nftBalance && Number(nftBalance) > 0 && address && (
-                  <NFTCard key={address} address={address} />
+                  <NFTCard key={address} address={address} chainId={chain?.id} />
                 )}
               </>
             )}
             <p className="app-text">
               Total Kittens Collected By Players: {isLoading1 ? 'Loading...' : !totalKittens ? 0 : Number(totalKittens)}
             </p>
-            <p className="app-text">Current reward: {isLoading2 ? 'Loading...' : !REWARD ? (chain?.id === 10143 ? "0.025 MON" : chain?.id === 11155111 || chain?.id === 534351 ? "0.015 ETH" : "20 FLOW") : `${Number(REWARD) / 1000000000000000000} ${chain?.id === 10143 ? 'MON' : chain?.id === 11155111 || chain?.id === 534351 ? 'ETH' : 'FLOW'}`}</p>
+            <p className="app-text">
+              Current reward: {isLoading2 ? 'Loading...' : !REWARD ? `0.015 ${nativeCurrency}` : `${Number(REWARD) / 1000000000000000000} ${nativeCurrency}`}
+            </p>
             {readError && <p className="app-error">Error: {readError.message}</p>}
             {readError1 && <p className="app-error">Error: {readError1.message}</p>}
             <p className="app-text">Minimum kittens required to claim rewards: 15 kittens</p>
@@ -776,17 +829,21 @@ return (
           </>
         )}
         <p className="app-textRequest">
-          If you have {chain?.id === 11155111 || chain?.id === 534351 ? 'Sepolia ETH' : chain?.id === 10143 ? 'Testnet MON' : 'Testnet FLOW'} that you don't need, please donate to this address
+          If you have Testnet {nativeCurrency} that you don't need, please donate to this address
         </p>
-        <p>{chain?.id === 534351 ? '0xA45a75B3523334bf4017b0BB9D76d4E06661fba3' : chain?.id === 11155111 ? '0xa9C4cd6C657f5110C6966c78962D47c24D27BD57' : chain?.id === 10143 ? '0x0968F5BF2EdEEEEf0bdB42C304DB24d5CE90B9D7' : '0x292Fe1de6ce0ca4917fB6163ECb4C00b395D5804'}</p>
-        <b><p className="app-textEligible">Donations above {chain?.id === 10143 ? '200 MON' : chain?.id === 11155111 || chain?.id === 534351 ? '200 SETH' : '10,000,000 FLOW'} will be eligible for advertisement!!</p></b>
+        <p>{contractAddress}</p>
+        <b>
+          <p className="app-textEligible">
+            Donations above {chain?.id === 545 ? '200 DEV' : chain?.id === 10143 ? '200 MON' : chain?.id === 11155111 || chain?.id === 534351 ? '200 SETH' : '200 DEV'} will be eligible for advertisement!!
+          </p>
+        </b>
         <i><p className="disclaimer">No gambling or NSFW advertisements allowed</p></i>
       </div>
       <img 
         className={`app-sepImg ${isConnected ? 'connected' : 'disconnected'}`} 
         src="/sepoliaSuit1.png" 
         useMap="#image-map" 
-        alt="Sepolia Cats Mascot" 
+        alt="Cats Mascot" 
       />
       <footer className="footerName">Made by AAK581</footer>
       <footer className="footerLinks">

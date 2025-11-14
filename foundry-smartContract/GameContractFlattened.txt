@@ -3698,11 +3698,11 @@ contract GameContract is Ownable {
     /// @dev Please use this variable instead of hardcoding it, same goes for REWARD
     uint256 public constant KITTENS_REQUIRED = 15;
     /// @notice The amount given by the faucet upon collecting the required number of kittens
-    uint256 public REWARD = 20.0 ether;
+    uint256 public REWARD = 0.05 ether;
     /// @notice The total number of kittens collected everywhere
     uint256 public totalKittens;
     /// @notice Number of kittens needed to mint the milestone NFT
-    uint256 public constant MILESTONE_KITTENS = 300;
+    uint256 public constant MILESTONE_KITTENS = 20;
 
     /// @notice An event that records how many kittens the user has
     /// @dev This is used each time the setKittens function is invoked
@@ -3843,4 +3843,3 @@ contract GameContract is Ownable {
         require(success, "Withdrawal failed");
     }
 }
-
