@@ -604,11 +604,11 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 // Helper function to get game URL by chain
 const getGameUrl = (chainId) => {
   switch(chainId) {
-    case 1287: return 'https://polkadot-cats-game.vercel.app/';
     case 545: return 'https://flow-cats-rpg-game.vercel.app/';
     case 11155111: return 'https://rpg-game-sepolia-cats.vercel.app/';
     case 534351: return 'https://rpg-game-sepolia-cats.vercel.app/';
     case 10143: return 'https://monad-cats-game.vercel.app/';
+    case 1287: return 'https://polkadot-cats-game.vercel.app/';
     default: return 'https://polkadot-cats-game.vercel.app/';
   }
 };
@@ -616,11 +616,11 @@ const getGameUrl = (chainId) => {
 // Helper function to get network name
 const getNetworkName = (chainId) => {
   switch(chainId) {
-    case 1287: return 'Polkadot Cats dApp';
     case 545: return 'FLOW Cats dApp';
     case 11155111: return 'Sepolia Cats dApp';
     case 534351: return 'Sepolia Cats dApp';
     case 10143: return 'Monad Cats dApp';
+    case 1287: return 'Polkadot Cats dApp';
     default: return 'Polkadot Cats dApp';
   }
 };
@@ -628,11 +628,11 @@ const getNetworkName = (chainId) => {
 // Helper function to get native currency
 const getNativeCurrency = (chainId) => {
   switch(chainId) {
-    case 1287: return 'DEV';
     case 545: return 'FLOW';
     case 11155111: return 'ETH';
     case 534351: return 'ETH';
     case 10143: return 'MON';
+    case 1287: return 'DEV';
     default: return 'DEV';
   }
 };
