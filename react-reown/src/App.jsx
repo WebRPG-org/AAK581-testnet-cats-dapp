@@ -59,7 +59,7 @@ createAppKit({
 
 // Contract configuration
 const contractAddresses = {
-  1287: '0xFee91cdC10A1663d69d6891d8b6621987aACe2EF', // Moonbase Alpha
+  1287: '0xEDDe9fc8ca8668046f9EAf9b64FDc94620518E26', // Moonbase Alpha
   545: '0x292Fe1de6ce0ca4917fB6163ECb4C00b395D5804', // Flow
   534351: '0xA45a75B3523334bf4017b0BB9D76d4E06661fba3', // Scroll Sepolia
   11155111: '0xa9C4cd6C657f5110C6966c78962D47c24D27BD57', // Sepolia
@@ -67,7 +67,7 @@ const contractAddresses = {
 };
 
 const nftAddresses = {
-  1287: '0x0968F5BF2EdEEEEf0bdB42C304DB24d5CE90B9D7', // Moonbase Alpha
+  1287: '0x3BDFaEA81A965643ECD5Bee47dBE28434FF740C8', // Moonbase Alpha
   545: '0x335777beD22AdA837E46D28AE83ba697eDD09d62' // Flow
 };
 
